@@ -98,6 +98,7 @@ export const WithLongReads = () => {
     assembly,
     tracks,
     defaultSession: longReadsSession,
+    forceTracks: ['wiggle_track_fractional_posneg'],
     location: 'ctgA:1105..1221',
   })
 
