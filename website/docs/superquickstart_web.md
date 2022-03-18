@@ -75,6 +75,7 @@ jbrowse add-track myfile.bam --index myfile.bai --out /var/www/html/jbrowse2 --l
 ## load gene annotations from a GFF, using "GenomeTools" (gt) to sort the gff
 ## and tabix to index the GFF3
 gt gff3 -sortlines -tidy -retainids myfile.gff > myfile.sorted.gff
+## alternative sort command (grep ^"#" in.gff3; grep -v ^"#" myfile.gff | sort -k1,1 -k4,4n) > myfile.sorted.gff
 bgzip myfile.sorted.gff
 tabix myfile.sorted.gff.gz
 jbrowse add-track myfile.sorted.gff.gz --out /var/www/html/jbrowse2 --load copy

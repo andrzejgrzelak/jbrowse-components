@@ -234,6 +234,7 @@ install can use `sudo apt install genometools`)
 
 ```sh-session
 gt gff3 -sortlines -tidy -retainids yourfile.gff > yourfile.sorted.gff
+## alternative sort command (grep ^"#" in.gff3; grep -v ^"#" yourfile.gff | sort -k1,1 -k4,4n) > yourfile.sorted.gff
 bgzip yourfile.sorted.gff
 tabix yourfile.sorted.gff.gz
 jbrowse add-track yourfile.sorted.gff.gz --load copy
