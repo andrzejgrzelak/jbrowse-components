@@ -12,7 +12,6 @@ also assumes you have:
 - a web server that reads files from /var/www/html/ e.g. Apache or nginx (not
   strictly necessary for jbrowse to run, see footnote)
 - node 12+ installed
-- genometools installed e.g. `sudo apt install genometools` or `brew install brewsci/bio/genometools`, used for sorting GFF3 for creating tabix GFF
 - samtools installed e.g. `sudo apt install samtools` or `brew install samtools`, used for creating FASTA index and BAM/CRAM processing
 - tabix installed e.g. `sudo apt install tabix` or `brew install htslib`, used
   for created tabix indexes for BED/VCF/GFF files
@@ -72,10 +71,10 @@ jbrowse add-track myfile.bam --index myfile.bai --out /var/www/html/jbrowse2 --l
 ### Loading GFF3
 
 ```
-## load gene annotations from a GFF, using "GenomeTools" (gt) to sort the gff
-## and tabix to index the GFF3
-gt gff3 -sortlines -tidy -retainids myfile.gff > myfile.sorted.gff
-## alternative sort command (grep ^"#" in.gff3; grep -v ^"#" myfile.gff | sort -k1,1 -k4,4n) > myfile.sorted.gff
+function sortgff() {
+  awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -k1,1 -k4,4n -k5,5n"}' $1
+}
+sortgff myfile.gff > myfile.sorted.gff
 bgzip myfile.sorted.gff
 tabix myfile.sorted.gff.gz
 jbrowse add-track myfile.sorted.gff.gz --out /var/www/html/jbrowse2 --load copy
@@ -111,11 +110,14 @@ jbrowse add-assembly mygenome.fa --out /var/www/html/jbrowse2/alt_config.json --
 ## Demo for loading synteny data, both assemblies are outputted to a single
 ## config.json in /var/www/html/jbrowse2/config.json
 minimap2 grape.fa peach.fa > peach_vs_grape.paf
+
+## Load indexed FASTA for each assembly
+samtools faidx grape.fa
+samtools faidx peach.fa
 jbrowse add-assembly grape.fa --load copy --out /var/www/html/jbrowse2/ -n grape
 jbrowse add-assembly peach.fa --load copy --out /var/www/html/jbrowse2/ -n peach
 
-## Use gt gff3 to make sorted tabixed gffs for each assembly, and then load to
-## their respective ## assembly
+## Load tabix'd GFFs for each assembly (see prev section on "Loading GFF3")
 jbrowse add-track grape.sorted.gff.gz -a grape --load copy --out /var/www/html/jbrowse2
 jbrowse add-track peach.sorted.gff.gz -a peach --load copy --out /var/www/html/jbrowse2
 

@@ -229,15 +229,22 @@ jbrowse add-track volvox-sorted.bam.coverage.bw --load copy
 
 To load a GFF3 file, we can sort and index it with tabix
 
-Sorting a GFF3 can be done with [GenomeTools](http://genometools.org/) (to
-install can use `sudo apt install genometools`)
-
 ```sh-session
-gt gff3 -sortlines -tidy -retainids yourfile.gff > yourfile.sorted.gff
-## alternative sort command (grep ^"#" in.gff3; grep -v ^"#" yourfile.gff | sort -k1,1 -k4,4n) > yourfile.sorted.gff
+awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -k1,1 -k4,4n"}' myfile.gff > myfile.sorted.gff
 bgzip yourfile.sorted.gff
 tabix yourfile.sorted.gff.gz
 jbrowse add-track yourfile.sorted.gff.gz --load copy
+```
+
+You can also create an alias to sort your GFFs with GNU sort
+
+```
+
+function sortgff() {
+  awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -k1,1 -k4,4n -k5,5n"}' $1
+}
+
+sortgff myfile.gff > myfile.sorted.gff
 ```
 
 ## Indexing feature names for searching
