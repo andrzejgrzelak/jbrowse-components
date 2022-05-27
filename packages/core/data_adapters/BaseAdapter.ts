@@ -46,7 +46,7 @@ export interface AnyAdapter {
 }
 
 export type AnyDataAdapter =
-  | BaseAdapter
+| BaseAdapter
   | BaseFeatureDataAdapter
   | BaseRefNameAliasAdapter
   | BaseTextSearchAdapter
@@ -220,16 +220,16 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     if (!regions.length) {
       return blankStats()
     }
-    const feats = await Promise.all(
+    const regionStats = await Promise.all(
       regions.map(region => this.getRegionStats(region, opts)),
     )
 
-    const scoreMax = feats.map(a => a.scoreMax).reduce((a, b) => Math.max(a, b))
-    const scoreMin = feats.map(a => a.scoreMin).reduce((a, b) => Math.min(a, b))
-    const scoreSum = feats.reduce((a, b) => a + b.scoreSum, 0)
-    const scoreSumSquares = feats.reduce((a, b) => a + b.scoreSumSquares, 0)
-    const featureCount = feats.reduce((a, b) => a + b.featureCount, 0)
-    const basesCovered = feats.reduce((a, b) => a + b.basesCovered, 0)
+    const scoreMax = regionStats.map(a => a.scoreMax).reduce((a, b) => a === undefined ? b : b === undefined ? a : Math.max(a, b))
+    const scoreMin = regionStats.map(a => a.scoreMin).reduce((a, b) => a === undefined ? b : b === undefined ? a : Math.min(a, b))
+    const scoreSum = regionStats.reduce((a, b) => a + b.scoreSum, 0)
+    const scoreSumSquares = regionStats.reduce((a, b) => a + b.scoreSumSquares, 0)
+    const featureCount = regionStats.reduce((a, b) => a + b.featureCount, 0)
+    const basesCovered = regionStats.reduce((a, b) => a + b.basesCovered, 0)
 
     return rectifyStats({
       scoreMin,
