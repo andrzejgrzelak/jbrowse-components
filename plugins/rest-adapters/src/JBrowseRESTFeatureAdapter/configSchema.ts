@@ -11,12 +11,12 @@ export default ConfigurationSchema(
       },
     },
     query: {
-      description: 'additional URL query values to pass to the REST endpoint',
+      description: 'additional URL query values to pass to the REST API',
       type: 'frozen',
       defaultValue: {}
     },
-    unimplemented: {
-      description: 'list of REST methods that are not implemented by this REST endpoint',
+    optional_resources: {
+      description: 'list of optional REST resources that are implemented by this REST API',
       type: 'stringArray',
       defaultValue: []
     }

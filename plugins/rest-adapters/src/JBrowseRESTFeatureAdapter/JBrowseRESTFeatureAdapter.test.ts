@@ -16,12 +16,12 @@ test('adapter can fetch features from mocked API', async () => {
 
 
   // @ts-ignore
-  const spy = jest.spyOn(adapter, 'fetch').mockImplementation(async (fetcher, url, signal) => {
+  const fetchMock = jest.spyOn(adapter, 'fetch').mockImplementation(async (fetcher, url: string, signal) => {
     return {
       async json() {
-        if (/\/features\//.test(url)) {
+        if (url.includes('/features/')) {
           return { features: testFeatures }
-        } else if (/\/reference_sequences\b/.test(url)) {
+        } else if (url.endsWith('/reference_sequences')) {
           return ['21']
         }
         throw new Error('no mock for ' + url)
@@ -41,7 +41,7 @@ test('adapter can fetch features from mocked API', async () => {
   expect(featuresArray[0].get('refName')).toBe('21')
   expect(featuresArray[0].id()).toBe('foo')
   // @ts-ignore
-  expect(spy.mock.calls[0][1]).toBe("/path/to/my/rest/endpoint/features/21?start=34960388&end=35960388")
+  expect(fetchMock.mock.calls[0][1]).toBe("/path/to/my/rest/endpoint/features/21?start=34960388&end=35960388")
   
   expect(await adapter.hasDataForRefName('ctgA')).toBe(false)
   expect(await adapter.hasDataForRefName('21')).toBe(true)
