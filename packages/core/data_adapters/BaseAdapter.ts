@@ -46,7 +46,7 @@ export interface AnyAdapter {
 }
 
 export type AnyDataAdapter =
-| BaseAdapter
+  | BaseAdapter
   | BaseFeatureDataAdapter
   | BaseRefNameAliasAdapter
   | BaseTextSearchAdapter
@@ -224,10 +224,21 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       regions.map(region => this.getRegionStats(region, opts)),
     )
 
-    const scoreMax = regionStats.map(a => a.scoreMax).reduce((a, b) => a === undefined ? b : b === undefined ? a : Math.max(a, b))
-    const scoreMin = regionStats.map(a => a.scoreMin).reduce((a, b) => a === undefined ? b : b === undefined ? a : Math.min(a, b))
+    const scoreMax = regionStats
+      .map(a => a.scoreMax)
+      .reduce((a, b) =>
+        a === undefined ? b : b === undefined ? a : Math.max(a, b),
+      )
+    const scoreMin = regionStats
+      .map(a => a.scoreMin)
+      .reduce((a, b) =>
+        a === undefined ? b : b === undefined ? a : Math.min(a, b),
+      )
     const scoreSum = regionStats.reduce((a, b) => a + b.scoreSum, 0)
-    const scoreSumSquares = regionStats.reduce((a, b) => a + b.scoreSumSquares, 0)
+    const scoreSumSquares = regionStats.reduce(
+      (a, b) => a + b.scoreSumSquares,
+      0,
+    )
     const featureCount = regionStats.reduce((a, b) => a + b.featureCount, 0)
     const basesCovered = regionStats.reduce((a, b) => a + b.basesCovered, 0)
 

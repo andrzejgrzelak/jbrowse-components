@@ -13,13 +13,14 @@ export default ConfigurationSchema(
     query: {
       description: 'additional URL query values to pass to the REST API',
       type: 'frozen',
-      defaultValue: {}
+      defaultValue: {},
     },
     optional_resources: {
-      description: 'list of optional REST resources that are implemented by this REST API',
+      description:
+        'list of optional REST resources that are implemented by this REST API',
       type: 'stringArray',
-      defaultValue: []
-    }
+      defaultValue: [],
+    },
   },
   { explicitlyTyped: true },
 )

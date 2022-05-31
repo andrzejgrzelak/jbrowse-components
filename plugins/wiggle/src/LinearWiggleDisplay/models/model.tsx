@@ -89,8 +89,9 @@ const stateModelFactory = (
         scoreMax?: number
       }) {
         if (
-          scoreMin !== undefined && scoreMax !== undefined && (self.stats.scoreMin !== scoreMin ||
-           self.stats.scoreMax !== scoreMax)
+          scoreMin !== undefined &&
+          scoreMax !== undefined &&
+          (self.stats.scoreMin !== scoreMin || self.stats.scoreMax !== scoreMax)
         ) {
           self.stats = { scoreMin, scoreMax }
         }
@@ -492,20 +493,26 @@ const stateModelFactory = (
         }
 
         if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
-          const results = await rpcManager.call(
+          const results = (await rpcManager.call(
             sessionId,
             'WiggleGetGlobalStats',
             params,
-          ) as FeatureStats
+          )) as FeatureStats
 
           if (autoscaleType === 'globalsd') {
             // globalsd uses an heuristic to avoid unnecessary scoreMin<0
             // if the scoreMin is never less than 0
             // helps with most coverage bigwigs just being >0
             let { scoreMin, scoreMean, scoreStdDev } = results
-            if (scoreMin === undefined) { scoreMin = 0 }
-            if (scoreMean === undefined) { scoreMean = 0 }
-            if (scoreStdDev === undefined) { scoreStdDev = 0 }
+            if (scoreMin === undefined) {
+              scoreMin = 0
+            }
+            if (scoreMean === undefined) {
+              scoreMean = 0
+            }
+            if (scoreStdDev === undefined) {
+              scoreStdDev = 0
+            }
             return {
               ...results,
               scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
@@ -539,9 +546,15 @@ const stateModelFactory = (
             // scoreMin is never less than 0 helps with most coverage bigwigs
             // just being >0
             let { scoreMin, scoreMean, scoreStdDev } = results
-            if (scoreMin === undefined) { scoreMin = 0 }
-            if (scoreMean === undefined) { scoreMean = 0 }
-            if (scoreStdDev === undefined) { scoreStdDev = 0 }
+            if (scoreMin === undefined) {
+              scoreMin = 0
+            }
+            if (scoreMean === undefined) {
+              scoreMean = 0
+            }
+            if (scoreStdDev === undefined) {
+              scoreStdDev = 0
+            }
             return {
               ...results,
               scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
