@@ -49,7 +49,6 @@ export default function createViewState({
         tracks,
         aggregateTextSearchAdapters,
       },
-      assemblyManager: {},
       session: defaultSession || {
         name: 'this session',
         view: {
@@ -65,31 +64,22 @@ export default function createViewState({
   pluginManager.configure()
 
   const assemblyName = stateTree.assemblyManager.assemblies[0].name
-  if (location) {
-    autorun(reaction => {
-      if (stateTree.session.view.initialized) {
-        if (typeof location === 'string') {
-          const assemblyName = stateTree.assemblyManager.assemblies[0].name
-          stateTree.session.view.navToLocString(location, assemblyName)
-        } else {
-          stateTree.session.view.navTo(location)
-        }
-        reaction.dispose()
-      }
-    })
-  }
+
   if (onChange) {
     onPatch(stateTree, onChange)
   }
 
-  console.log('wtf')
-  pluginManager.evaluateAsyncExtensionPoint('LaunchView-LinearGenomeView', {
-    ...spec,
-    view: stateTree.session.view,
-    session: stateTree.session,
-    assembly: assemblyName,
-    loc: '',
-  })
+  pluginManager
+    .evaluateAsyncExtensionPoint('LaunchView-LinearGenomeView', {
+      ...spec,
+      view: stateTree.session.view,
+      session: stateTree.session,
+      assembly: assemblyName,
+      loc: location,
+    })
+    .catch(e => {
+      stateTree.session.notify(`${e}`, 'error')
+    })
 
   return stateTree
 }

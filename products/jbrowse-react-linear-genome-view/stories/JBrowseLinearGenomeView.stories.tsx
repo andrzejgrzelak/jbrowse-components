@@ -93,14 +93,18 @@ export const UsingLocObject = () => {
     // use 0-based coordinates for "location object" here
     location: { refName: 'ctgA', start: 10000, end: 20000 },
   })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return (
+    <div>
+      <h1>Navigating to ctgA:10000-20000</h1>
+      <JBrowseLinearGenomeView viewState={state} />
+    </div>
+  )
 }
 export const WithLongReads = () => {
   const state = createViewState({
     assembly,
     tracks,
     defaultSession: longReadsSession,
-    forceTracks: ['wiggle_track_fractional_posneg'],
     location: 'ctgA:1105..1221',
   })
 

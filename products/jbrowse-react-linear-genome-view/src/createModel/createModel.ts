@@ -27,7 +27,7 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
     .model('ReactLinearGenomeView', {
       config: createConfigModel(pluginManager, assemblyConfig),
       session: Session,
-      assemblyManager: assemblyManagerType,
+      assemblyManager: types.optional(assemblyManagerType, {}),
     })
     .volatile(() => ({
       error: undefined as Error | undefined,

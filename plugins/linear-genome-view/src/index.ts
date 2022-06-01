@@ -130,7 +130,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
         session,
         assembly,
         loc,
-        view: preView,
+        view: propView,
         tracks = [],
       }: {
         session: AbstractSessionModel
@@ -139,10 +139,9 @@ export default class LinearGenomeViewPlugin extends Plugin {
         tracks?: string[]
         view?: LGV
       }) => {
-        console.log('here', session, tracks)
         const { assemblyManager } = session
-        const view = preView ?? (session.addView('LinearGenomeView', {}) as LGV)
-        console.log(assemblyManager)
+        const view =
+          propView ?? (session.addView('LinearGenomeView', {}) as LGV)
 
         await when(() => !!view.volatileWidth)
 
@@ -159,8 +158,10 @@ export default class LinearGenomeViewPlugin extends Plugin {
           )
         }
 
-        if (loc) {
+        if (typeof loc === 'string') {
           view.navToLocString(loc, assembly)
+        } else if (loc) {
+          view.navTo(loc)
         }
 
         const idsNotFound = [] as string[]
