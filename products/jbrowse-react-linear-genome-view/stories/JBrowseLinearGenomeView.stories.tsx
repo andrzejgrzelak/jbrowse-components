@@ -71,7 +71,9 @@ export const UsingDefaultTracks = () => {
     assembly,
     tracks,
     defaultSession,
-    defaultTracks: ['wiggle_track_fractional_posneg'],
+    spec: {
+      tracks: ['wiggle_track_fractional_posneg'],
+    },
 
     // use 1-based coordinates for locstring
     location: 'ctgA:1105..1221',

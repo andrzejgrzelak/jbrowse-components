@@ -7,10 +7,12 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core'
+import ScopedCssBaseline from '@material-ui/core/ScopedCssBaseline'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
+
+// locals
 import { SessionModel } from '../createModel/createSessionModel'
-import ScopedCssBaseline from '@material-ui/core/ScopedCssBaseline'
 
 const useStyles = makeStyles({
   paper: {
@@ -28,9 +30,9 @@ const ModalWidgetContents = observer(
         </AppBar>
       )
     }
-    const { ReactComponent, HeadingComponent, heading } = getEnv(
-      session,
-    ).pluginManager.getWidgetType(visibleWidget.type)
+    const { pluginManager } = getEnv(session)
+    const { ReactComponent, HeadingComponent, heading } =
+      pluginManager.getWidgetType(visibleWidget.type)
     return (
       <>
         <AppBar position="static">

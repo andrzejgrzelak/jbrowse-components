@@ -13,9 +13,9 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
 import {
+  baseLinearDisplayConfigSchema,
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
-  baseLinearDisplayConfigSchema,
   BlockModel,
 } from './BaseLinearDisplay'
 import {
@@ -23,10 +23,10 @@ import {
   stateModelFactory as LinearBareDisplayStateModelFactory,
 } from './LinearBareDisplay'
 import {
-  LinearGenomeViewModel,
-  LinearGenomeViewStateModel,
   stateModelFactory as linearGenomeViewStateModelFactory,
   renderToSvg,
+  LinearGenomeViewModel,
+  LinearGenomeViewStateModel,
   RefNameAutocomplete,
   SearchBox,
 } from './LinearGenomeView'
@@ -130,15 +130,19 @@ export default class LinearGenomeViewPlugin extends Plugin {
         session,
         assembly,
         loc,
+        view: preView,
         tracks = [],
       }: {
         session: AbstractSessionModel
         assembly?: string
         loc: string
         tracks?: string[]
+        view?: LGV
       }) => {
+        console.log('here', session, tracks)
         const { assemblyManager } = session
-        const view = session.addView('LinearGenomeView', {}) as LGV
+        const view = preView ?? (session.addView('LinearGenomeView', {}) as LGV)
+        console.log(assemblyManager)
 
         await when(() => !!view.volatileWidth)
 
@@ -155,11 +159,14 @@ export default class LinearGenomeViewPlugin extends Plugin {
           )
         }
 
-        view.navToLocString(loc, assembly)
+        if (loc) {
+          view.navToLocString(loc, assembly)
+        }
 
         const idsNotFound = [] as string[]
         tracks.forEach(track => {
           try {
+            console.log('wow', track, view)
             view.showTrack(track)
           } catch (e) {
             if (`${e}`.match('Could not resolve identifier')) {

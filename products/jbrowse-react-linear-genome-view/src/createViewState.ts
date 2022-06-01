@@ -19,19 +19,6 @@ interface Location {
   assemblyName?: string
 }
 
-interface ViewStateOptions {
-  assembly: Assembly
-  tracks: Tracks
-  aggregateTextSearchAdapters?: AggregateTextSearchAdapters
-  configuration?: Record<string, unknown>
-  plugins?: PluginConstructor[]
-  location?: string | Location
-  defaultSession?: SessionSnapshot
-  defaultTracks?: string[]
-  forceTracks?: string[]
-  onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
-}
-
 export default function createViewState({
   assembly,
   tracks,
@@ -39,18 +26,21 @@ export default function createViewState({
   aggregateTextSearchAdapters,
   location,
   onChange,
-  defaultTracks,
-  forceTracks,
-  plugins = [],
-  defaultSession = {
-    name: 'this session',
-    view: {
-      id: 'linearGenomeView',
-      type: 'LinearGenomeView',
-    },
-  },
-}: ViewStateOptions) {
-  const { model, pluginManager } = createModel(plugins)
+  spec,
+  defaultSession,
+  plugins,
+}: {
+  assembly: Assembly
+  tracks: Tracks
+  aggregateTextSearchAdapters?: AggregateTextSearchAdapters
+  configuration?: Record<string, unknown>
+  plugins?: PluginConstructor[]
+  location?: string | Location
+  defaultSession?: SessionSnapshot
+  spec?: any
+  onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
+}) {
+  const { model, pluginManager } = createModel(plugins || [])
   const stateTree = model.create(
     {
       config: {
@@ -60,13 +50,21 @@ export default function createViewState({
         aggregateTextSearchAdapters,
       },
       assemblyManager: {},
-      session: defaultSession,
+      session: defaultSession || {
+        name: 'this session',
+        view: {
+          id: 'linearGenomeView',
+          type: 'LinearGenomeView',
+        },
+      },
     },
     { pluginManager },
   )
 
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
+
+  const assemblyName = stateTree.assemblyManager.assemblies[0].name
   if (location) {
     autorun(reaction => {
       if (stateTree.session.view.initialized) {
@@ -84,14 +82,14 @@ export default function createViewState({
     onPatch(stateTree, onChange)
   }
 
-  forceTracks?.forEach(track => {
-    stateTree.session.view.showTrack(track)
+  console.log('wtf')
+  pluginManager.evaluateAsyncExtensionPoint('LaunchView-LinearGenomeView', {
+    ...spec,
+    view: stateTree.session.view,
+    session: stateTree.session,
+    assembly: assemblyName,
+    loc: '',
   })
 
-  if (!defaultSession.view?.tracks?.length) {
-    defaultTracks?.forEach(track => {
-      stateTree.session.view.showTrack(track)
-    })
-  }
   return stateTree
 }
