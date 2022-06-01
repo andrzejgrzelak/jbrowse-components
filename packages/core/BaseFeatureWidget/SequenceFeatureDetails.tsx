@@ -64,14 +64,16 @@ function GeneCDS({ cds, sequence }: { cds: Feat[]; sequence: string }) {
 function GeneProtein({
   cds,
   sequence,
-  codonTable,
+  codonTable: codonTablePre,
 }: {
   cds: Feat[]
   sequence: string
-  codonTable: { [key: string]: string }
+  codonTable: string
 }) {
   const str = stitch(cds, sequence)
   let protein = ''
+  const table = parseCodonTable(codonTablePre)
+  const codonTable = generateCodonTable(table.codons)
   for (let i = 0; i < str.length; i += 3) {
     // use & symbol for undefined codon, or partial slice
     protein += codonTable[str.slice(i, i + 3)] || '&'
@@ -153,12 +155,11 @@ export const SequencePanel = React.forwardRef<
   HTMLDivElement,
   SequencePanelProps
 >((props, ref) => {
-  const { feature, mode, intronBp, codonTable: codonTablePre } = props
+  const { feature, mode, intronBp, codonTable } = props
   let {
     sequence: { seq, upstream = '', downstream = '' },
   } = props
   const { subfeatures } = feature
-  const codonTable = generateCodonTable(parseCodonTable(codonTablePre))
 
   if (!subfeatures) {
     return null
