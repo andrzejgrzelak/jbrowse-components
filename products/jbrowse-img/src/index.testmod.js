@@ -1,4 +1,6 @@
 import { renderRegion } from './renderRegion'
+
+import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
 import fs from 'fs'
 
 function hashCode(str) {
