@@ -235,6 +235,48 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             { delay: 1000 },
           ),
         )
+
+        // autorun synchronizes featureUnderMouse with featureIdUnderMouse
+        addDisposer(
+          self,
+          autorun(async () => {
+            const session = getSession(self)
+            try {
+              const featureId = self.featureIdUnderMouse
+              if (self.featureUnderMouse?.id() !== featureId) {
+                if (!featureId) {
+                  self.setFeatureUnderMouse(undefined)
+                } else {
+                  const sessionId = getRpcSessionId(self)
+                  const view = getContainingView(self)
+                  const { feature } = (await session.rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatureDetails',
+                    {
+                      featureId,
+                      sessionId,
+                      layoutId: view.id,
+                      rendererType: 'PileupRenderer',
+                    },
+                  )) as { feature: unknown }
+
+                  // check featureIdUnderMouse is still the same as the
+                  // feature.id that was returned e.g. that the user hasn't
+                  // moused over to a new position during the async operation
+                  // above
+                  // @ts-ignore
+                  if (self.featureIdUnderMouse === feature.uniqueId) {
+                    // @ts-ignore
+                    self.setFeatureUnderMouse(new SimpleFeature(feature))
+                  }
+                }
+              }
+            } catch (e) {
+              console.error(e)
+              session.notify(`${e}`, 'error')
+            }
+          }),
+        )
       },
       selectFeature(feature: Feature) {
         const session = getSession(self)
@@ -459,38 +501,9 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
               }
             },
 
-            async onMouseMove(_: unknown, featureId?: string) {
-              const session = getSession(self)
-              const { rpcManager } = session
-              self.setFeatureIdUnderMouse(featureId)
-              try {
-                const f = featureId || self.featureIdUnderMouse
-                if (!f) {
-                  self.setFeatureUnderMouse(undefined)
-                } else {
-                  const sessionId = getRpcSessionId(self)
-                  const { feature } = (await rpcManager.call(
-                    sessionId,
-                    'CoreGetFeatureDetails',
-                    {
-                      featureId: f,
-                      sessionId,
-                      layoutId: getContainingView(self).id,
-                      rendererType: 'PileupRenderer',
-                    },
-                  )) as { feature: unknown }
-
-                  // @ts-ignore
-                  if (f === feature?.uniqueId) {
-                    // @ts-ignore
-                    self.setFeatureUnderMouse(new SimpleFeature(feature))
-                  }
-                }
-              } catch (e) {
-                console.error(e)
-                session.notify(`${e}`)
-              }
-            },
+            // async onMouseMove(_: unknown, featureId?: string) {
+            //   self.setFeatureIdUnderMouse(featureId)
+            // },
 
             onMouseLeave(_: unknown) {
               self.setFeatureUnderMouse(undefined)
@@ -556,19 +569,17 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
               disabled: self.showSoftClipping,
               subMenu: [
                 ...['Start location', 'Read strand', 'Base pair'].map(
-                  option => {
-                    return {
-                      label: option,
-                      onClick: () => self.setSortedBy(option),
-                    }
-                  },
+                  option => ({
+                    label: option,
+                    onClick: () => self.setSortedBy(option),
+                  }),
                 ),
                 {
                   label: 'Sort by tag...',
                   onClick: () => {
-                    getSession(self).queueDialog(doneCallback => [
+                    getSession(self).queueDialog(handleClose => [
                       SortByTagDlg,
-                      { model: self, handleClose: doneCallback },
+                      { model: self, handleClose },
                     ])
                   },
                 },
