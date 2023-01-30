@@ -7,26 +7,15 @@ import { flags } from '@oclif/command'
 // locals
 import { indexGff3 } from '../types/gff3Adapter'
 import { indexVcf } from '../types/vcfAdapter'
-import JBrowseCommand, {
-  Track,
-  Config,
-  TrixTextSearchAdapter,
-  UriLocation,
-  LocalPathLocation,
-} from '../base'
+import JBrowseCommand, { LocalPathLocation, Track, TrixTextSearchAdapter, UriLocation, } from '../base'
 import {
   generateMeta,
-  supported,
+  getTrackConfigs,
   guessAdapterFromFileName,
+  readConf,
+  supported,
+  writeConf,
 } from '../types/common'
-
-function readConf(path: string) {
-  return JSON.parse(fs.readFileSync(path, 'utf8')) as Config
-}
-
-function writeConf(obj: Config, path: string) {
-  fs.writeFileSync(path, JSON.stringify(obj, null, 2))
-}
 
 function getLoc(elt: UriLocation | LocalPathLocation) {
   return elt.locationType === 'LocalPathLocation' ? elt.localPath : elt.uri
@@ -108,7 +97,7 @@ export default class TextIndex extends JBrowseCommand {
     dryrun: flags.boolean({
       description:
         'Just print out tracks that will be indexed by the process, without doing any indexing',
-    }),
+    })
   }
 
   async run() {
@@ -137,7 +126,7 @@ export default class TextIndex extends JBrowseCommand {
       force,
       exclude,
       dryrun,
-      prefixSize,
+      prefixSize
     } = flags
     const outFlag = target || out || '.'
     const isDir = fs.lstatSync(outFlag).isDirectory()
@@ -161,7 +150,7 @@ export default class TextIndex extends JBrowseCommand {
     }
 
     for (const asm of asms) {
-      const trackConfigs = await this.getTrackConfigs(
+      const trackConfigs = await getTrackConfigs(
         confPath,
         tracks?.split(','),
         asm,
@@ -196,7 +185,7 @@ export default class TextIndex extends JBrowseCommand {
           attributes: attributes.split(','),
           typesToExclude: exclude.split(','),
           assemblyNames: [asm],
-          prefixSize,
+          prefixSize
         })
 
         const trixConf = {
@@ -265,7 +254,10 @@ export default class TextIndex extends JBrowseCommand {
         `Can't specify assemblies when indexing per track, remove assemblies flag to continue.`,
       )
     }
-    const confs = await this.getTrackConfigs(confFilePath, tracks?.split(','))
+    const confs = await getTrackConfigs(
+      confFilePath,
+      tracks?.split(','),
+    )
     if (!confs.length) {
       throw new Error(
         `Tracks not found in config.json, please add track configurations before indexing.`,
@@ -289,7 +281,7 @@ export default class TextIndex extends JBrowseCommand {
         name: trackId,
         typesToExclude: exclude.split(','),
         assemblyNames,
-        prefixSize,
+        prefixSize
       })
       if (!textSearching?.textSearchAdapter) {
         // modifies track with new text search adapter
@@ -362,7 +354,7 @@ export default class TextIndex extends JBrowseCommand {
       attributes: attributes.split(','),
       typesToExclude: exclude.split(','),
       assemblyNames: [],
-      prefixSize,
+      prefixSize
     })
 
     this.log(
@@ -492,29 +484,5 @@ export default class TextIndex extends JBrowseCommand {
     )
   }
 
-  async getTrackConfigs(
-    configPath: string,
-    trackIds?: string[],
-    assemblyName?: string,
-  ) {
-    const { tracks } = readConf(configPath)
-    if (!tracks) {
-      return []
-    }
-    const trackIdsToIndex = trackIds || tracks?.map(track => track.trackId)
-    return trackIdsToIndex
-      .map(trackId => {
-        const currentTrack = tracks.find(t => trackId === t.trackId)
-        if (!currentTrack) {
-          throw new Error(
-            `Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`,
-          )
-        }
-        return currentTrack
-      })
-      .filter(track => supported(track.adapter?.type))
-      .filter(track =>
-        assemblyName ? track.assemblyNames.includes(assemblyName) : true,
-      )
-  }
+
 }

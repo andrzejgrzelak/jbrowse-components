@@ -54,6 +54,7 @@ It is likely preferable in most cases to install the tools globally with
 - [`jbrowse admin-server`](#jbrowse-admin-server)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
+- [`jbrowse remote-to-local`](#jbrowse-remote-to-local)
 - [`jbrowse remove-track TRACK`](#jbrowse-remove-track-track)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
 - [`jbrowse text-index`](#jbrowse-text-index)
@@ -425,6 +426,58 @@ OPTIONS
 
 _See code:
 [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.14/src/commands/help.ts)_
+
+## `jbrowse remote-to-local`
+
+Donwloads remote files to local processing (eg. text-index) for any given
+track(s).
+
+```
+USAGE
+  $ jbrowse remote-to-local
+
+OPTIONS
+  -a, --assemblies=assemblies  Specify the assembl(ies) to download. If unspecified, creates an index for each assembly
+                               in the config
+
+  -h, --help                   show CLI help
+
+  -q, --quiet                  Hide the progress bars
+
+  --authtoken=authtoken        String to send as "Authorization" header
+
+  --dryrun                     Just print out tracks that will be downloaded by the process, without doing any
+                               downloading
+
+  --force                      Overwrite previously existing files
+
+  --out=out                    Synonym for target
+
+  --target=target              Path to config file in JB2 installation directory to read from.
+
+  --tracks=tracks              Specific tracks to download, formatted as comma separated trackIds. If unspecified,
+                               indexes all available tracks
+
+EXAMPLES
+  # downloads all tracks that it can find in the current directory's config.json
+  $ jbrowse remote-to-local
+
+  # downloads specific trackIds that it can find in the current directory's config.json
+  $ jbrowse remote-to-local --tracks=track1,track2,track3
+
+  # indexes all tracks in a directory's config.json or in a specific config file
+  $ jbrowse remote-to-local --out /path/to/jb2/
+
+  # indexes only a specific assembly, and overwrite what was previously there using force (which is needed if file is
+  already downloaded)
+  $ jbrowse remote-to-local -a hg19 --force
+
+  # create index for some files for use in @jbrowse/react-linear-genome-view or similar
+  $ jbrowse remote-to-local --file myfile.gff3.gz --file myfile.vcfgz --out indexes
+```
+
+_See code:
+[src/commands/remote-to-local.ts](https://github.com/GMOD/jbrowse-components/blob/v2.3.3/products/jbrowse-cli/src/commands/remote-to-local.ts)_
 
 ## `jbrowse remove-track TRACK`
 

@@ -2,11 +2,19 @@ import fs from 'fs'
 import path from 'path'
 
 // locals
-import { Track, LocalPathLocation, UriLocation } from '../base'
+import { Track, LocalPathLocation, UriLocation, Config } from '../base'
 import fetch from '../fetchWithProxy'
+import { HeadersInit } from 'node-fetch'
 
-export async function createRemoteStream(urlIn: string) {
-  const response = await fetch(urlIn)
+export async function createRemoteStream(
+  urlIn: string,
+  authToken: string | null = null,
+) {
+  let headers: HeadersInit = {}
+  if (authToken) {
+    headers['Authorization'] = authToken
+  }
+  const response = await fetch(urlIn, { headers })
   if (!response.ok) {
     throw new Error(
       `Failed to fetch ${urlIn} status ${
@@ -29,7 +37,7 @@ export function isURL(FileName: string) {
   return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
-function makeLocation(location: string, protocol: string) {
+export function makeLocation(location: string, protocol: string) {
   if (protocol === 'uri') {
     return {
       uri: location,
@@ -102,6 +110,40 @@ export function guessAdapterFromFileName(filePath: string): Track {
   } else {
     throw new Error(`Unsupported file type ${filePath}`)
   }
+}
+
+export function readConf(path: string) {
+  return JSON.parse(fs.readFileSync(path, 'utf8')) as Config
+}
+
+export function writeConf(obj: Config, path: string) {
+  fs.writeFileSync(path, JSON.stringify(obj, null, 2))
+}
+
+export async function getTrackConfigs(
+  configPath: string,
+  trackIds?: string[],
+  assemblyName?: string,
+) {
+  const { tracks } = readConf(configPath)
+  if (!tracks) {
+    return []
+  }
+  const trackIdsToIndex = trackIds || tracks?.map(track => track.trackId)
+  return trackIdsToIndex
+    .map(trackId => {
+      const currentTrack = tracks.find(t => trackId === t.trackId)
+      if (!currentTrack) {
+        throw new Error(
+          `Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`,
+        )
+      }
+      return currentTrack
+    })
+    .filter(track => supported(track.adapter?.type))
+    .filter(track =>
+      assemblyName ? track.assemblyNames.includes(assemblyName) : true,
+    )
 }
 
 export function supported(type: string) {
